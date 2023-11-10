@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Countdown Timer</title>
+  <link rel="stylesheet" href="index.css" />
+</head>
+<body>
+  <div id="clock">
+    <div id="timer">
+    </div>
+  </div>
+  <div id="start-button">
+    <button id="startButton">Start Clock</button>
+  </div>
+
+  <script>
+    let countdown;
+    let endTime;
+
+    function updateDisplay() {
+      const now = new Date().getTime();
+      const countdownTime = endTime - now;
+      
+      if (countdownTime < 0) {
+        clearInterval(countdown);
+        document.getElementById("timer").innerHTML = "Session Complete!";
+        return;
+      }
+      
+      const minutes = Math.floor((countdownTime % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((countdownTime % (1000 * 60)) / 1000);
+      
+      document.getElementById("timer").innerHTML = minutes + "m " + (seconds < 10 ? "0" : "") + seconds + "s ";
+    }
+
+    function startCountdown() {
+      endTime = new Date(new Date().getTime() + 25 * 60000);
+      updateDisplay(); 
+      
+      // Set a timeout to align the countdown with the next full second
+      const timeUntilNextSecond = 1000 - (new Date().getTime() % 1000);
+      setTimeout(function() {
+        updateDisplay();
+        countdown = setInterval(updateDisplay, 1000);
+      }, timeUntilNextSecond);
+    }
+
+    document.getElementById('startButton').addEventListener('click', startCountdown);
+
+  </script>
+</body>
+</html>
