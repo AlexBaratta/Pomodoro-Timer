@@ -4,7 +4,7 @@ import '../styles/PomodoroTimer.css';
 const PomodoroTimer = () => {
   const [endTime, setEndTime] = useState(null);
   const [timerDisplay, setTimerDisplay] = useState('25m 00s');
-  const [timerActive, setTimerActive] = useState(false); // State to track if the timer is active
+  const [timerActive, setTimerActive] = useState(false); 
   const intervalRef = useRef(null);
 
   const calculateTimeLeft = useCallback(() => {
@@ -20,7 +20,7 @@ const PomodoroTimer = () => {
       if (countdownTime <= 0) {
         setTimerDisplay("Session Complete!");
         setEndTime(null);
-        setTimerActive(false); // Reset timerActive when the countdown completes
+        setTimerActive(false); 
         clearInterval(intervalRef.current);
         return;
       }
@@ -32,20 +32,20 @@ const PomodoroTimer = () => {
     };
 
     if (endTime) {
-      updateDisplay(); // Immediate update before the interval starts
+      updateDisplay(); 
 
       intervalRef.current = setInterval(updateDisplay, 1000);
     } else {
-      setTimerDisplay('25m 00s'); // Reset display when there's no endTime
+      setTimerDisplay('25m 00s'); 
     }
 
     return () => clearInterval(intervalRef.current);
   }, [endTime, calculateTimeLeft]);
 
   const startCountdown = () => {
-    const newEndTime = new Date(new Date().getTime() + 25 * 60000); // 25 minutes from now
+    const newEndTime = new Date(new Date().getTime() + 25 * 60000); 
     setEndTime(newEndTime);
-    setTimerActive(true); // Set timerActive to true when starting the countdown
+    setTimerActive(true); 
   };
 
   return (
@@ -57,8 +57,7 @@ const PomodoroTimer = () => {
       </div>
       <div id="start-button">
         <button id="startButton" onClick={startCountdown}>
-          {timerActive ? 'Restart Timer' : 'Start Clock'} {/* Change button text based on timerActive */}
-        </button>
+          {timerActive ? 'Restart Timer' : 'Start Clock'}         </button>
       </div>
     </div>
   );
