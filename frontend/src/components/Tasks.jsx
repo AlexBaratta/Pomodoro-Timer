@@ -1,15 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const Tasks = ({ tasks = [], fetchTasks }) => {
+const Tasks = () => {
+  const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState('');
 
+  const fetchTasks = () => {
+    axios.get('/api/tasks/')
+      .then(response => {
+        setTasks(response.data);
+      })
+      .catch(error => {
+        console.error('There was an error fetching the tasks:', error);
+      });
+  };
+
   const addTask = () => {
+    console.log('test')
     if (!newTask) return;
-    axios.post('/api/tasks', { title: newTask })
+    axios.post('/api/tasks/', { title: newTask })
       .then(() => {
         setNewTask('');
-        fetchTasks(); 
+        fetchTasks(); // Fetch tasks again to refresh the list
       })
       .catch(error => {
         console.error('There was an error adding the task:', error);
@@ -26,6 +38,10 @@ const Tasks = ({ tasks = [], fetchTasks }) => {
       });
   };
 
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
   return (
     <div>
       <input
@@ -37,11 +53,11 @@ const Tasks = ({ tasks = [], fetchTasks }) => {
       <button onClick={addTask}>Add Task</button>
       <ul>
         {tasks.map(task => (
-          <li key={task.id}>
+          <li key={task._id}> 
             <input
               type="checkbox"
               checked={task.completed}
-              onChange={() => updateTask(task.id, !task.completed)}
+              onChange={() => updateTask(task._id, !task.completed)} 
             />
             {task.title}
           </li>

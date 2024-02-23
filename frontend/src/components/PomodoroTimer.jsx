@@ -1,63 +1,64 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import '../styles/PomodoroTimer.css';
 
 const PomodoroTimer = () => {
-  const [countdown, setCountdown] = useState(null);
   const [endTime, setEndTime] = useState(null);
-  const [timerDisplay, setTimerDisplay] = useState('');
+  const [timerDisplay, setTimerDisplay] = useState('25m 00s');
+  const [timerActive, setTimerActive] = useState(false); // State to track if the timer is active
+  const intervalRef = useRef(null);
+
+  const calculateTimeLeft = useCallback(() => {
+    const now = new Date().getTime();
+    const countdownTime = endTime ? endTime - now : 0;
+    return countdownTime;
+  }, [endTime]);
 
   useEffect(() => {
-    // Clear the interval when the component unmounts
-    return () => clearInterval(countdown);
-  }, [countdown]);
-
-  useEffect(() => {
-    if (!endTime) return;
-
     const updateDisplay = () => {
-      const now = new Date().getTime();
-      const countdownTime = endTime - now;
+      const countdownTime = calculateTimeLeft();
 
-      if (countdownTime < 0) {
-        clearInterval(countdown);
+      if (countdownTime <= 0) {
         setTimerDisplay("Session Complete!");
+        setEndTime(null);
+        setTimerActive(false); // Reset timerActive when the countdown completes
+        clearInterval(intervalRef.current);
         return;
       }
 
-      const minutes = Math.floor(
-        (countdownTime % (1000 * 60 * 60)) / (1000 * 60)
-      );
+      const minutes = Math.floor((countdownTime % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((countdownTime % (1000 * 60)) / 1000);
 
       setTimerDisplay(`${minutes}m ${seconds < 10 ? '0' : ''}${seconds}s`);
     };
 
-    // Synchronize countdown with full seconds
-    const timeUntilNextSecond = 1000 - (new Date().getTime() % 1000);
-    const timeout = setTimeout(() => {
-      updateDisplay();
-      const interval = setInterval(updateDisplay, 1000);
-      setCountdown(interval);
-    }, timeUntilNextSecond);
+    if (endTime) {
+      updateDisplay(); // Immediate update before the interval starts
 
-    return () => {
-      clearTimeout(timeout);
-    };
-  }, [endTime]);
+      intervalRef.current = setInterval(updateDisplay, 1000);
+    } else {
+      setTimerDisplay('25m 00s'); // Reset display when there's no endTime
+    }
+
+    return () => clearInterval(intervalRef.current);
+  }, [endTime, calculateTimeLeft]);
 
   const startCountdown = () => {
-    setEndTime(new Date(new Date().getTime() + 25 * 60000));
+    const newEndTime = new Date(new Date().getTime() + 25 * 60000); // 25 minutes from now
+    setEndTime(newEndTime);
+    setTimerActive(true); // Set timerActive to true when starting the countdown
   };
 
   return (
     <div id="container">
       <div id="clock">
         <div id="timer" className={timerDisplay === "Session Complete!" ? 'complete' : ''}>
-          {timerDisplay || '25m 00s'}
+          {timerDisplay}
         </div>
       </div>
       <div id="start-button">
-        <button id="startButton" onClick={startCountdown}>Start Clock</button>
+        <button id="startButton" onClick={startCountdown}>
+          {timerActive ? 'Restart Timer' : 'Start Clock'} {/* Change button text based on timerActive */}
+        </button>
       </div>
     </div>
   );
